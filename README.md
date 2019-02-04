@@ -5,6 +5,8 @@ External 7-segment display driver for Wing Commander
 
 Tested on Windows 10 with GOG release of Wing Commander 1.
 
+[![Demo](https://img.youtube.com/vi/hQmGzvr_CLs/0.jpg)](https://www.youtube.com/watch?v=hQmGzvr_CLs)
+
 ##### Hardware used for external display:
 - Elegoo Arduino UNO R3
 - 830 tie-points breadboard
