@@ -62,6 +62,7 @@ namespace kps_counter
             {
                 Console.WriteLine("Exception caught while opening serial connection! Aborting...");
                 Console.WriteLine(e);
+                Console.ReadLine();
                 return;
             }
 
@@ -78,6 +79,7 @@ namespace kps_counter
             {
                 Console.WriteLine("Exception caught while attaching to DOSBox! Aborting...");
                 Console.WriteLine(e);
+                Console.ReadLine();
                 return;
             }
 
