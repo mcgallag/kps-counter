@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.IO.Ports;
+using System.Linq;
 
 namespace kps_counter
 {
@@ -88,12 +88,50 @@ namespace kps_counter
             Console.WriteLine("Press Ctrl-C to exit program");
             Console.WriteLine("");
 
+            // set up initial values
+            int kps = -1;
+            string playerCallsign = "";
+            string wingmanCallsign = "";
+            int playerKills = -1;
+            int wingmanKills = -1;
+
             // loop until user aborts program
             while (true)
             {
-                // fetch from memory and write to the serial port
-                int kps = reader.GetSetKPS();
-                port.WriteLine(kps.ToString());
+                // fetch each value from memory and send to serial port if it has changed
+                int num = reader.GetSetKPS();
+                if (num != kps)
+                {
+                    port.WriteLine(num.ToString());
+                    kps = num;
+                }
+
+                num = reader.GetCurrentKills();
+                if (num != playerKills)
+                {
+                    playerKills = num;
+                    port.WriteLine("K" + playerKills.ToString());
+                }
+
+                num = reader.GetWingmanKills();
+                if (num != wingmanKills)
+                {
+                    wingmanKills = num;
+                    port.WriteLine("X" + wingmanKills.ToString());
+                }
+
+                string callsign = reader.GetPlayerCallsign().Trim();
+                if (callsign != playerCallsign)
+                {
+                    playerCallsign = callsign;
+                    port.WriteLine("P" + playerCallsign);
+                }
+                callsign = reader.GetWingmanCallsign().Trim();
+                if (callsign != wingmanCallsign)
+                {
+                    wingmanCallsign = callsign;
+                    port.WriteLine("W" + wingmanCallsign);
+                }
             }
         }
 

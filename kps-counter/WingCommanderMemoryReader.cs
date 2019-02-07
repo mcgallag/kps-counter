@@ -8,6 +8,7 @@ namespace kps_counter
     /// </summary>
     class WingCommanderMemoryReader
     {
+        // used for interfacing with DOSBox
         private Mem m;
         private int pid;
 
@@ -20,10 +21,20 @@ namespace kps_counter
         /// base memory address for DOSBox RAM
         /// </summary>
         private const string memoryBase = "0x01D3A1A0";
+
+        //private const string callSignOffset = "0x1E040"; // WC1
         /// <summary>
         /// memory offset for player callsign
         /// </summary>
-        private const string callSignOffset = "0x1E040";
+        private const string callSignOffset = "0x27C9B"; // WC2
+        /// <summary>
+        /// memory offset for wingman callsign
+        /// </summary>
+        private const string wingmanCallsignOffset = "0x2AC86"; // WC2
+        /// <summary>
+        /// memory offset for wingman kills
+        /// </summary>
+        private const string wingmanKillsOffsetWC2 = "0x302d2"; // WC2
         /// <summary>
         /// memory offset for player name
         /// </summary>
@@ -39,7 +50,8 @@ namespace kps_counter
         /// <summary>
         /// memory offset for player's in-mission kills
         /// </summary>
-        private const string currentKillsOffset = "0x1E402";
+        //private const string currentKillsOffset = "0x1E402"; // WC1
+        private const string currentKillsOffset = "0x302C8"; // WC2
         /// <summary>
         /// memory offset for player's rank value
         /// </summary>
@@ -47,11 +59,12 @@ namespace kps_counter
         /// <summary>
         /// memory offset for player's ship kps
         /// </summary>
-        private const string setKpsOffset = "0x1FFE7";
+        //private const string setKpsOffset = "0x1FFE7";
+        private const string setKpsOffset = "0x295FF";
         /// <summary>
         /// memory offset for player's remaining afterburner fuel
         /// </summary>
-        private const string remainingFuelOffset = "0x2045C";
+        private const string remainingFuelOffset = "0x2045C"; //WC1
 
         /// <summary>
         /// used to properly calcuate number of player kills, set when we enter Halcyon's debriefing and cleared at mission start
@@ -65,14 +78,14 @@ namespace kps_counter
         {
             m = new Mem();
 
-            GetPID();
+            SetPID();
         }
 
         /// <summary>
-        /// returns the process id of DOSBox if available
+        /// sets and returns the process id of DOSBox if available
         /// </summary>
         /// <returns></returns>
-        public int GetPID()
+        public int SetPID()
         {
             pid = m.getProcIDFromName("DOSBox");
             return pid;
@@ -84,7 +97,7 @@ namespace kps_counter
         public void hook()
         {
             // refresh PID just to be safe
-            GetPID();
+            SetPID();
             if (pid == 0) throw new DOSBoxMemoryException("getProcIDFromName returned 0. Are you sure DOSBox.exe is running?");
             OpenProc = m.OpenProcess(pid);
             if (OpenProc == false) throw new DOSBoxMemoryException("OpenProcess returned false. Are administrative priveleges acquried?");
@@ -127,7 +140,21 @@ namespace kps_counter
             if (OpenProc)
             {
                 string addr = memoryBase + "," + callSignOffset;
-                return m.readString(addr, length: 14);
+                return m.readString(addr, length: 10);
+            }
+            throw new DOSBoxMemoryException("Must hook to DOSBox process before reading memory.");
+        }
+
+        /// <summary>
+        /// fetches wingman callsign from DOSBox memory
+        /// </summary>
+        /// <returns>wingman callsign</returns>
+        public string GetWingmanCallsign()
+        {
+            if (OpenProc)
+            {
+                string addr = memoryBase + "," + wingmanCallsignOffset;
+                return m.readString(addr, length: 10);
             }
             throw new DOSBoxMemoryException("Must hook to DOSBox process before reading memory.");
         }
@@ -159,6 +186,21 @@ namespace kps_counter
             }
             throw new DOSBoxMemoryException("Must hook to DOSBox process before reading memory.");
         }
+
+        /// <summary>
+        /// fetches wingman in-mission kills from DOSBox memory
+        /// </summary>
+        /// <returns>wingman in-mission kills</returns>
+        public int GetWingmanKills()
+        {
+            if (OpenProc)
+            {
+                string addr = memoryBase + "," + wingmanKillsOffsetWC2;
+                return m.readByte(addr);
+            }
+            throw new DOSBoxMemoryException("Must hook to DOSBox process before reading memory.");
+        }
+
 
         /// <summary>
         /// fetches player in-mission kills from DOSBox memory
